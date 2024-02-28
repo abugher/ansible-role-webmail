@@ -1,0 +1,28 @@
+upstream php {
+  server unix:/run/php/{{ php_fpm }}.sock;
+}
+
+server {
+  listen                        443 ssl;
+  ssl_certificate               /etc/ssl/certs/chain.pem;
+  ssl_certificate_key           /etc/ssl/private/{{ inventory_hostname }}.pem;
+  server_name                   webmail webmail.{{ domain }};
+
+  access_log                    /var/log/nginx/webmail.access.log;
+
+  root                          /var/lib/roundcube/public_html;
+  index                         index.php;
+
+  location ~ \.php$ {
+    include /etc/nginx/fastcgi_params;
+    fastcgi_pass php;
+    # See:  http://stackoverflow.com/a/15424808
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME $document_root/$fastcgi_script_name;
+  }
+
+  error_page 500 502 503 504 /50x.html;
+  location = /50x.html {
+    root /var/www/nginx-default;
+  }
+}

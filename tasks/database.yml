@@ -1,0 +1,16 @@
+---
+- name:                 'set database user password:  root'
+  mysql_user:
+    name:               'root'
+    password:           "{{ db_root_pw }}"
+    login_user:         'root'
+    login_password:     ''
+  register:             databse_root_pw_result
+
+- name:                 'create database user:  roundcube'
+  mysql_user:
+    name:               'roundcube'
+    state:              'present'
+    login_user:         'root'
+    login_password:     "{{ db_root_pw }}"
+  register:             database_user_result

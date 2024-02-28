@@ -1,0 +1,35 @@
+---
+db_root_pw:                     "{{ lookup('community.general.passwordstore', 'aaron/webmail.neuronpointer.net/db-root') }}"
+php_fpm:                        'php8.2-fpm'
+dependencies:
+  - 'nginx'
+install_packages:
+  - 'roundcube'
+  - "{{ php_fpm }}"
+  - 'python3-pymysql'
+template_files:
+  - owner:                      'root'
+    group:                      'root'
+    mode:                       '0644'
+    src:                        'templates/conf/sites-available/webmail.j2'
+    dest:                       '/etc/nginx/sites-available/webmail'
+  - owner:                      'root'
+    group:                      'root'
+    mode:                       '0644'
+    src:                        'templates/conf/sites-available/webmail.ssl.j2'
+    dest:                       '/etc/nginx/sites-available/webmail.ssl'
+symlinks:
+  - owner:                      'root'
+    group:                      'root'
+    src:                        '/etc/nginx/sites-available/webmail'
+    dest:                       '/etc/nginx/sites-enabled/webmail'
+  - owner:                      'root'
+    group:                      'root'
+    src:                        '/etc/nginx/sites-available/webmail.ssl'
+    dest:                       '/etc/nginx/sites-enabled/webmail.ssl'
+enable_services:
+  - 'nginx'
+  - 'mariadb'
+  - "{{ php_fpm }}"
+start_services:                 "{{ enable_services }}"
+restart_services:               "{{ enable_services }}"
