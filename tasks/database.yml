@@ -1,11 +1,73 @@
 ---
-- name:                 'set database user password:  root'
+# Why doesn't this fail?
+#- shell:
+#    cmd:                '/usr/bin/mariadb --user="root" --password="{{ db_root_pw }}" < /dev/null'
+#  become:               True
+#  become_method:        'sudo'
+#  become_user:          'root'
+#  ignore_errors:        True
+#  register:             check_db_root_pw_result
+
+- name:                 'check database user password:  root'
   mysql_user:
     name:               'root'
     password:           "{{ db_root_pw }}"
     login_user:         'root'
-    login_password:     ''
-  register:             databse_root_pw_result
+  ignore_errors:        True
+  register:             check_db_root_pw_result
+
+#- include:              '../tasks/stop_services.yml'
+#  vars:
+#    stop_services:
+#      - 'mariadb'
+#  when:                 check_db_root_pw_result.failed
+
+- include:              '../tasks/shell_commands.yml'
+  vars:
+    shell_commands:
+      - command:        if test -e /run/mysqld/mysqld.pid; then kill $(cat /run/mysqld/mysqld.pid); fi
+#      - command:        /usr/bin/mariadb-admin shutdown
+#      - command:        killall mariadb
+  ignore_errors:        True
+  when:                 check_db_root_pw_result.failed
+
+- include:              '../tasks/shell_commands.yml'
+  vars:
+    shell_commands:
+      - command:        nohup /usr/bin/mariadbd-safe --skip-grant-tables --skip-networking </dev/null > /var/log/mariadbd-safe.log 2>&1 &
+  when:                 check_db_root_pw_result.failed
+
+- pause:
+    seconds:            10
+  when:                 check_db_root_pw_result.failed
+
+#- name:                 'set database user password:  root'
+#  mysql_user:
+#    name:               'root'
+#    password:           "{{ db_root_pw }}"
+#    login_user:         'root'
+#  when:                 check_db_root_pw_result.failed
+
+# This logs the password as well as exposing it in the process table.
+- shell:
+    cmd:                'echo "FLUSH PRIVILEGES; ALTER USER \"root\"@\"localhost\" IDENTIFIED BY \"{{ db_root_pw }}\";" | /usr/bin/mariadb --user="root"'
+  become:               True
+  become_method:        'sudo'
+  become_user:          'root'
+  when:                 check_db_root_pw_result.failed
+
+- include:              '../tasks/shell_commands.yml'
+  vars:
+    shell_commands:     
+      - command:        if test -e /run/mysqld/mysqld.pid; then kill $(cat /run/mysqld/mysqld.pid); fi
+#      - command:        killall mariadb
+  when:                 check_db_root_pw_result.failed
+
+- include:              '../tasks/start_services.yml'
+  vars:
+    start_services:
+      - 'mariadb'
+  when:                 check_db_root_pw_result.failed
 
 - name:                 'create database user:  roundcube'
   mysql_user:
@@ -13,4 +75,3 @@
     state:              'present'
     login_user:         'root'
     login_password:     "{{ db_root_pw }}"
-  register:             database_user_result

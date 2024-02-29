@@ -3,11 +3,10 @@
 - include:                      '../tasks/install_packages.yml'
 - include:                      '../tasks/template_files.yml'
 - include:                      '../tasks/symlinks.yml'
-- include:                      'tasks/database.yml'
 - include:                      '../tasks/enable_services.yml'
 - include:                      '../tasks/start_services.yml'
+- include:                      'tasks/database.yml'
 - include:                      '../tasks/restart_services.yml'
   when:                         install_packages_result.changed
                                 or template_files_result.changed
                                 or symlinks_result.changed
-                                or database_user_result.changed
