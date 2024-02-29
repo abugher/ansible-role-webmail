@@ -1,5 +1,4 @@
 ---
-db_root_pw:                     "{{ lookup('community.general.passwordstore', 'aaron/webmail.neuronpointer.net/db-root') }}"
 php_fpm:                        'php8.2-fpm'
 dependencies:
   - 'nginx'
@@ -33,4 +32,6 @@ enable_services:
   - 'mariadb'
   - "{{ php_fpm }}"
 start_services:                 "{{ enable_services }}"
+database_users:
+  - 'roundcube'
 restart_services:               "{{ enable_services }}"

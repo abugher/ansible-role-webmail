@@ -5,7 +5,7 @@
 - include:                      '../tasks/symlinks.yml'
 - include:                      '../tasks/enable_services.yml'
 - include:                      '../tasks/start_services.yml'
-- include:                      'tasks/database.yml'
+- include:                      '../tasks/database_users.yml'
 - include:                      '../tasks/restart_services.yml'
   when:                         install_packages_result.changed
                                 or template_files_result.changed
