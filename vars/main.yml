@@ -1,7 +1,47 @@
 ---
+db_pw_roundcube:                "{{ lookup('community.general.passwordstore', 'aaron/webmail.neuronpointer.net/db-roundcube') }}"
+db_pw_root:                     "{{ lookup('community.general.passwordstore', 'aaron/webmail.neuronpointer.net/db-root') }}"
 php_fpm:                        'php8.2-fpm'
 dependencies:
   - 'nginx'
+# Probably only necessary if roundcube-core has been installed and removed.
+# Necessary during development, at least.  Otherwise, expect a lot of "Cannot
+# find question for" messages from debconf.
+commands:
+  - command:                    /usr/share/debconf/fix_db.pl
+debconf:
+  - package:                    'roundcube-core'
+    type:                       'boolean'
+    question:                   'roundcube/dbconfig-install'
+    answer:                     'true'
+  - package:                    'roundcube-core'
+    type:                       'string'
+    question:                   'roundcube/hosts'
+    answer:                     "ssl://{{ groups['mail-server'][0] }}.{{ domain }}:993"
+  - package:                    'roundcube-core'
+    type:                       'string'
+    question:                   'roundcube/mysql/admin-user'
+    answer:                     'mysql'
+  - package:                    'roundcube-core'
+    type:                       'password'
+    question:                   'roundcube/mysql/admin-pass'
+    answer:                     "{{ db_pw_root }}"
+    no_log:                     True
+  - package:                    'roundcube-core'
+    type:                       'password'
+    question:                   'roundcube/password-confirm'
+    answer:                     "{{ db_pw_root }}"
+    no_log:                     True
+  - package:                    'roundcube-core'
+    type:                       'password'
+    question:                   'roundcube/mysql/app-pass'
+    answer:                     "{{ db_pw_roundcube }}"
+    no_log:                     True
+  - package:                    'roundcube-core'
+    type:                       'password'
+    question:                   'roundcube/app-password-confirm'
+    answer:                     "{{ db_pw_roundcube }}"
+    no_log:                     True
 install_packages:
   - 'roundcube'
   - "{{ php_fpm }}"
@@ -32,6 +72,16 @@ enable_services:
   - 'mariadb'
   - "{{ php_fpm }}"
 start_services:                 "{{ enable_services }}"
-database_users:
-  - 'roundcube'
+database_passwords:
+  - user:                       'mysql'
+    password:                   "{{ db_pw_root }}"
+  - user:                       'roundcube'
+    password:                   "{{ db_pw_roundcube }}"
+databases:
+  - name:                       'roundcube'
+    owner:                      'roundcube'
+    collation:                  'utf8_unicode_ci'
+    encoding:                   'utf8'
+shell_commands:
+  - command:                    mariadb -S /run/mysqld/mysqld.sock -u 'root' 'roundcube' < /var/lib/roundcube/SQL/mysql.initial.sql
 restart_services:               "{{ enable_services }}"
