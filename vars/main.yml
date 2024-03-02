@@ -67,6 +67,10 @@ symlinks:
     group:                      'root'
     src:                        '/etc/nginx/sites-available/webmail.ssl'
     dest:                       '/etc/nginx/sites-enabled/webmail.ssl'
+lines_in_files:
+  - line:                       "$config['smtp_host'] = 'ssl://{{ groups['mail-server'][0] }}.{{ domain }}:465';"
+    regexp:                     "^\\$config\\['smtp_host'\\] = "
+    dest:                       '/etc/roundcube/config.inc.php'
 enable_services:
   - 'nginx'
   - 'mariadb'
