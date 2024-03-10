@@ -5,7 +5,7 @@ php_fpm:                        'php8.2-fpm'
 # Probably only necessary if roundcube-core has been installed and removed.
 # Necessary during development, at least.  Otherwise, expect a lot of "Cannot
 # find question for" messages from debconf.
-commands:
+shell_commands_ignore_change:
   - command:                    /usr/share/debconf/fix_db.pl
 debconf:
   - package:                    'roundcube-core'
