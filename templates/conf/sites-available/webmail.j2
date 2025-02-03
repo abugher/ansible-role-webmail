@@ -1,6 +1,6 @@
 server {
-        listen          80;
-	server_name     webmail webmail.{{ domain }};
-        return 301      https://webmail.{{ domain }}$request_uri;
+  listen                80;
+  server_name           webmail webmail.{{ domain }}{% for domain_alias in domain_aliases %} webmail.{{ domain_alias }}{% endfor %};
+  return 301            https://webmail.{{ domain }}$request_uri;
 }
 
