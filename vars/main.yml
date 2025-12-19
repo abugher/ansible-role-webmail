@@ -1,7 +1,7 @@
 ---
+php_fpm:                        "php{{ php_version }}-fpm"
 db_pw_roundcube:                "{{ lookup('community.general.passwordstore', 'aaron/webmail.neuronpointer.net/db-roundcube') }}"
 db_pw_root:                     "{{ lookup('community.general.passwordstore', 'aaron/webmail.neuronpointer.net/db-root') }}"
-php_fpm:                        'php8.4-fpm'
 # Probably only necessary if roundcube-core has been installed and removed.
 # Necessary during development, at least.  Otherwise, expect a lot of "Cannot
 # find question for" messages from debconf.
