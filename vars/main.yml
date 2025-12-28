@@ -41,8 +41,8 @@ debconf:
     answer:                     "{{ db_pw_roundcube }}"
     no_log:                     True
 install_packages:
-  - 'roundcube'
   - "{{ php_fpm }}"
+  - 'roundcube'
   - 'python3-pymysql'
   - 'mariadb-server'
 template_files:
